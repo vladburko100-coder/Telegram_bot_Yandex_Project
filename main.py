@@ -1,6 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from handlers.register_routers import register_routers
+from handlers import register_routers
 
 TOKEN = '8708989854:AAErwQMCfkZ-mu6tRkBnVPR-Gm1DvQektWY'
 

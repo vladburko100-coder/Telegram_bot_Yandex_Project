@@ -1,1 +1,1 @@
-# Telegram_bot_Yandex_Project
+I'll create a TG bot that will include Yandex API services and some kind of AI API.

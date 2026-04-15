@@ -11,7 +11,7 @@ async def start_bot(message: types.Message, state: FSMContext):
     await state.clear()
 
     welcome_text = (
-        f"Привет, {message.from_user.full_name}"
+        f"Привет, я API бот!"
     )
     await message.answer(
         welcome_text,
