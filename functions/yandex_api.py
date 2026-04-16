@@ -38,6 +38,3 @@ def static_maps(cords):
 
     response = requests.get('https://static-maps.yandex.ru/v1', params=params)
     return response.url
-
-# print(search_cords('Санкт-Петербург'))
-# print(static_maps([30.314997, 59.938784]))

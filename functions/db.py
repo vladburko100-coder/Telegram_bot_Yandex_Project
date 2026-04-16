@@ -59,6 +59,4 @@ def get_top_players(limit=5):
 
     cursor.execute("""SELECT username, total FROM users ORDER BY total DESC LIMIT ?""", (limit,))
     result = cursor.fetchall()
-    connection.close()
-
     return result
