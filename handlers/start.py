@@ -1,7 +1,8 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from keyboards.menu import main_menu_kb
+from keyboards.keyboards import main_menu_kb
+from functions.db import add_user
 
 router = Router()
 
@@ -9,11 +10,8 @@ router = Router()
 @router.message(Command('start'))
 async def start_bot(message: types.Message, state: FSMContext):
     await state.clear()
-
-    welcome_text = (
-        f"Привет, я API бот!"
-    )
+    add_user(message.from_user.id, message.from_user.username)
     await message.answer(
-        welcome_text,
+        f"Привет, я Geoguessr бот!",
         reply_markup=main_menu_kb()
     )

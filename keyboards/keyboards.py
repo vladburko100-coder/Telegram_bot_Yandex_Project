@@ -1,12 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-
-def get_type_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Сейчас', callback_data='current')],
-        [InlineKeyboardButton(text='Прогноз', callback_data='forecast')],
-        [InlineKeyboardButton(text='Вернуться', callback_data='cancel_menu')]
-    ])
+from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 
 
 def get_back_keyboard():
@@ -15,9 +7,28 @@ def get_back_keyboard():
     ])
 
 
-def get_weather_keyboard():
+def main_menu_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='7 дней', callback_data='forecast_7')],
-        [InlineKeyboardButton(text='30 дней', callback_data='forecast_30')],
-        [InlineKeyboardButton(text='Назад', callback_data='cancel')]
+        [InlineKeyboardButton(text='Играть', callback_data='play')],
+        [InlineKeyboardButton(text='Профиль', callback_data='profile')]
+    ])
+
+
+def start_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Да!', callback_data='starting'),
+         InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
+    ])
+
+
+def profile_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Топ 5', callback_data='top_5'),
+         InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
+    ])
+
+
+def come_back():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Вернуться', callback_data='cancel_profile')]
     ])

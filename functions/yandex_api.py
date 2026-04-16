@@ -12,11 +12,15 @@ def search_cords(place):
         "lang": "ru_RU",
     }
     response = requests.get(url, params=params)
-    response_json = response.json()
-    cords = response_json['features'][0]['geometry']['coordinates']
-    address = response_json['features'][0]['properties']['name']
-
-    return cords, address
+    if response.status_code == 200:
+        try:
+            response_json = response.json()
+            cords = response_json['features'][0]['geometry']['coordinates']
+            return cords
+        except IndexError:
+            return None
+    else:
+        return None
 
 
 def static_maps(cords):
@@ -25,11 +29,15 @@ def static_maps(cords):
     params = {
         'apikey': api_key,
         'll': f'{lon},{lat}',
-        'z': 16,
+        'z': 15,
         'l': 'map',
         'pt': f'{lon},{lat},vkbkm',
-        'size': '650,450'
+        'size': '650,450',
+        'style': "elements:label|stylers.visibility:off"
     }
 
     response = requests.get('https://static-maps.yandex.ru/v1', params=params)
     return response.url
+
+# print(search_cords('Санкт-Петербург'))
+# print(static_maps([30.314997, 59.938784]))

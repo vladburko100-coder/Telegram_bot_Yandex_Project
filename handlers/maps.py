@@ -1,40 +1,60 @@
+import sqlite3
 from aiogram import F, Router, types
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
-from keyboards.menu import main_menu_kb
+from keyboards.keyboards import start_keyboard
 from functions.yandex_api import search_cords, static_maps
-from keyboards.keyboards import get_back_keyboard
+from functions.db import add_total
 
 router = Router()
 
 
-class MapStates(StatesGroup):
-    waiting_for_address = State()
+class States(StatesGroup):
+    answer = State()
 
 
-@router.message(F.text == 'Карты')
-async def static_map(message: types.Message, state: FSMContext):
-    await state.set_state(MapStates.waiting_for_address)
-    await message.answer(
-        'Введи топоним, а я покажу его на карте',
-        reply_markup=main_menu_kb()
+@router.callback_query(F.data == 'play')
+async def static_map(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text(
+        'Начнем игру?',
+        reply_markup=start_keyboard()
     )
 
 
-@router.message(MapStates.waiting_for_address)
-async def get_address(message: types.Message, state: FSMContext):
-    try:
-        cords, address = search_cords(message.text)
-        map_url = static_maps(cords)
-        await message.answer_photo(
-            photo=map_url, caption=f"<i>{address}</i>\n\n"
-                                   f"<i>Координаты: </i>{cords[0]}, {cords[1]}", parse_mode='HTML',reply_markup=types.InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [types.InlineKeyboardButton(text='Ссылка на объект', url=map_url)],
-                        [InlineKeyboardButton(text='Вернуться', callback_data='cancel_menu')]
-                    ]
-                )
-            )
-    except IndexError:
-        await message.answer('Объект не найден...\nПопробуйте снова!')
+@router.callback_query(F.data == 'starting')
+async def handle_starting_callback(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    thinking_msg = await callback.message.answer("Думаю над местом...")
+
+    secret_cords = search_cords('59.732489,+30.474645')
+    if secret_cords:
+        await state.update_data(secret_cords=secret_cords)
+        map_url = static_maps(secret_cords)
+
+        await thinking_msg.delete()
+
+        await callback.message.delete()
+        await callback.message.answer_photo(
+            photo=map_url,
+            caption="Что это за место?"
+        )
+        await state.set_state(States.answer)
+
+
+@router.message(States.answer)
+async def handle_user_answer(message: types.Message, state: FSMContext):
+    user_cords = message.text
+
+    data = await state.get_data()
+    secret_cords = data.get('secret_cords')
+
+    user_cords = search_cords(user_cords)
+    if user_cords:
+        if user_cords == secret_cords:
+            add_total(message.from_user.id)
+            await message.answer('ВЕРНО!!')
+        else:
+            await message.answer('Неверно(((')
+    else:
+        await message.answer('место, которое вы загадали не найдено')

@@ -1,8 +1,13 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher
 from handlers import register_routers
+from dotenv import load_dotenv
+from functions.db import create_database
 
-TOKEN = '8708989854:AAErwQMCfkZ-mu6tRkBnVPR-Gm1DvQektWY'
+load_dotenv()
+
+TOKEN = os.getenv("TOKEN")
 
 
 async def main():
@@ -15,4 +20,5 @@ async def main():
 
 
 if __name__ == '__main__':
+    create_database()
     asyncio.run(main())
