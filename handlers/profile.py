@@ -30,7 +30,7 @@ async def top_players(callback: types.CallbackQuery, state: FSMContext):
     tir_list = ''
     for i, (user, total) in enumerate(data, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "📌"
-        tir_list += f"{medal} <b>{i}.</b>  <i>@{user}</i> — <b>{total}</b> 🎯\n"
+        tir_list += f"{medal} <b>{i}.</b>  <i>{user}</i> — <b>{total}</b> 🎯\n"
     await callback.message.edit_text(
         f'Топ игроков\n\n{tir_list}',
         reply_markup=come_back(),

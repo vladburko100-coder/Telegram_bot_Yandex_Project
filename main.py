@@ -7,7 +7,7 @@ from functions.db import create_database
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("TOKEN_BOT")
 
 
 async def main():

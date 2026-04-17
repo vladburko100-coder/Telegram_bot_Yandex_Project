@@ -1,10 +1,13 @@
-import pprint
-
+from dotenv import load_dotenv
+from datetime import datetime
 import requests
+import os
+
+load_dotenv()
 
 
 def search_cords(place):
-    apikey = "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3"
+    apikey = os.getenv('SEARCH_APIKEY')
     url = "https://search-maps.yandex.ru/v1/"
     params = {
         "apikey": apikey,
@@ -24,16 +27,22 @@ def search_cords(place):
 
 
 def static_maps(cords):
+    day_time = int(datetime.now().strftime("%H"))
+    if day_time >= 18 or day_time <= 4:
+        day_time = 'dark'
+    else:
+        day_time = 'light'
     lon, lat = cords
-    api_key = "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
+    api_key = os.getenv('MAPS_APIKEY')
     params = {
         'apikey': api_key,
+        'lang': 'ru_RU',
         'll': f'{lon},{lat}',
-        'z': 15,
-        'l': 'map',
+        'spn': '0.4,0.4',
         'pt': f'{lon},{lat},vkbkm',
         'size': '650,450',
-        'style': "elements:label|stylers.visibility:off"
+        'style': "tags.any:locality|stylers.visibility:off",
+        'theme': day_time
     }
 
     response = requests.get('https://static-maps.yandex.ru/v1', params=params)

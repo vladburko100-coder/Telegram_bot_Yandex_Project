@@ -32,3 +32,15 @@ def come_back():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Вернуться', callback_data='cancel_profile')]
     ])
+
+
+def continue_or_come_back():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Продолжить', callback_data='starting')],
+        [InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
+    ])
+
+def get_help():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Помощь', callback_data='help')]
+    ])
