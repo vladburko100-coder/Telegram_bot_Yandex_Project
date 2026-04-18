@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import date
 
 
 def create_database(db_name="game_stats.db"):
@@ -10,6 +11,7 @@ def create_database(db_name="game_stats.db"):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER UNIQUE,
                 username TEXT,
+                date TEXT,
                 total INTEGER DEFAULT 0
             )
         """)
@@ -24,7 +26,8 @@ def add_user(user_id, username):
     connection = sqlite3.connect('game_stats.db')
     cursor = connection.cursor()
     try:
-        cursor.execute("INSERT INTO users (user_id, username, total) VALUES (?, ?, ?)", (user_id, username, 0))
+        cursor.execute("INSERT INTO users (user_id, username, date, total) VALUES (?, ?, ?, ?)",
+                       (user_id, username, date.today().strftime("%d.%m.%Y"), 0))
         connection.commit()
     except sqlite3.IntegrityError:
         cursor.execute(
@@ -60,3 +63,11 @@ def get_top_players(limit=5):
     cursor.execute("""SELECT username, total FROM users ORDER BY total DESC LIMIT ?""", (limit,))
     result = cursor.fetchall()
     return result
+
+
+def get_date(user_id):
+    connection = sqlite3.connect('game_stats.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT date FROM users WHERE user_id = ?", (user_id,))
+    date = cursor.fetchall()
+    return date

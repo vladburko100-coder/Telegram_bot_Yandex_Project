@@ -3,7 +3,6 @@ from keyboards.keyboards import come_back, profile_keyboard
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from functions.db import get_user_total, get_top_players
-from tabulate import tabulate
 
 router = Router()
 

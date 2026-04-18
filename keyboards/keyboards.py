@@ -16,8 +16,9 @@ def main_menu_kb():
 
 def start_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Да!', callback_data='starting'),
-         InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
+        [InlineKeyboardButton(text='Страны', callback_data='search_country')],
+        [InlineKeyboardButton(text='Города', callback_data='search_city')],
+        [InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
     ])
 
 
@@ -36,7 +37,7 @@ def come_back():
 
 def continue_or_come_back():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Продолжить', callback_data='starting')],
+        [InlineKeyboardButton(text='Продолжить', callback_data='continue_game')],
         [InlineKeyboardButton(text='Вернуться', callback_data='cancel')]
     ])
 

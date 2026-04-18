@@ -26,7 +26,7 @@ def search_cords(place):
         return None
 
 
-def static_maps(cords):
+def static_maps(cords, spn):
     day_time = int(datetime.now().strftime("%H"))
     if day_time >= 18 or day_time <= 4:
         day_time = 'dark'
@@ -38,10 +38,10 @@ def static_maps(cords):
         'apikey': api_key,
         'lang': 'ru_RU',
         'll': f'{lon},{lat}',
-        'spn': '0.4,0.4',
+        'spn': spn,
         'pt': f'{lon},{lat},vkbkm',
         'size': '650,450',
-        'style': "tags.any:locality|stylers.visibility:off",
+        'style': "tags.any:admin;landscape|stylers.visibility:off",
         'theme': day_time
     }
 
