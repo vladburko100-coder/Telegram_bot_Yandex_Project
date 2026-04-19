@@ -12,6 +12,6 @@ async def start_bot(message: types.Message, state: FSMContext):
     await state.clear()
     add_user(message.from_user.id, message.from_user.username)
     await message.answer(
-        f"Привет, я Geoguessr бот!",
+        f"Добро пожаловать в Geoguessr бот!",
         reply_markup=main_menu_kb()
     )

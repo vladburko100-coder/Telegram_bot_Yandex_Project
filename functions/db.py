@@ -69,5 +69,5 @@ def get_date(user_id):
     connection = sqlite3.connect('game_stats.db')
     cursor = connection.cursor()
     cursor.execute("SELECT date FROM users WHERE user_id = ?", (user_id,))
-    date = cursor.fetchall()
-    return date
+    date = cursor.fetchone()
+    return date[0]
