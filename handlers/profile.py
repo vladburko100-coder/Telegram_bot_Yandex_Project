@@ -2,7 +2,7 @@ from aiogram import F, Router, types
 from keyboards.keyboards import come_back, profile_keyboard
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from functions.db import get_user_total, get_top_players, get_date
+from functions.db import get_user_total, get_top_players, get_date, get_rang_user
 
 router = Router()
 
@@ -17,20 +17,23 @@ async def get_profile(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.answer()
     await callback.message.edit_text(
-        f'Профиль\n\n@{callback.from_user.username}\nПервый заход {get_date(callback.from_user.id)}\n'
-        f'Угаданных мест: {get_user_total(callback.from_user.id)}',
-        reply_markup=profile_keyboard()
+        f'<b>Профиль</b> @{callback.from_user.username}\n\n'
+        f'<b>Ранг:</b> {get_rang_user(callback.from_user.id)}\n'
+        f'<b>Угаданных мест:</b> {get_user_total(callback.from_user.id)}\n\n'
+        f'              <b>Первый заход:</b> {get_date(callback.from_user.id)}\n',
+        reply_markup=profile_keyboard(),
+        parse_mode='HTML'
     )
 
 
 @router.callback_query(F.data == 'top_5')
 async def top_players(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
-    data = get_top_players()
+    data = get_top_players(5)
     tir_list = ''
-    for i, (user, total) in enumerate(data, 1):
+    for i, (user, total, rang) in enumerate(data, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "📌"
-        tir_list += f"{medal} <i>{user}</i> — <b>{total}</b> 🎯\n"
+        tir_list += f"{medal} <i>{user}</i> — {rang} <b>{total}</b> 🎯\n"
     await callback.message.edit_text(
         f'Топ игроков\n\n{tir_list}',
         reply_markup=come_back(),

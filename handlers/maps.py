@@ -1,4 +1,3 @@
-import sqlite3
 from aiogram import F, Router, types
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -147,7 +146,7 @@ async def handle_user_answer(message: types.Message, state: FSMContext):
         if user_cords == secret_cords:
             add_total(message.from_user.id)
             await message.answer('Верно ✅', reply_markup=continue_game_kb())
-            await state.update_data(secret_cords=None, secret_place=None)
+            await state.clear()
         else:
             await message.answer(f'Неверно ❌', reply_markup=continue_or_come_back())
     else:
