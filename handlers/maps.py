@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from keyboards.keyboards import start_keyboard, continue_or_come_back, get_help, continue_game_kb
 from functions.yandex_api import search_cords, static_maps
 from functions.openai_api import get_secret_city, get_help_from_ai, get_secret_country
-from functions.db import add_total
+from functions.db import db
 
 router = Router()
 
@@ -36,7 +36,7 @@ async def get_helps(callback: types.CallbackQuery, state: FSMContext):
         if prompt:
             await thinking_msg.delete()
 
-            await callback.message.answer(prompt)
+            await callback.message.answer(prompt, parse_mode='HTML')
     except ConnectionError:
         await callback.message.answer('Не смог придумать подсказку... 🤧')
 
@@ -140,14 +140,16 @@ async def continue_game(callback: types.CallbackQuery, state: FSMContext):
 async def handle_user_answer(message: types.Message, state: FSMContext):
     data = await state.get_data()
     secret_cords = data.get('secret_cords')
+    mode = data.get('mode')
     user_cords = search_cords(message.text)
 
     if user_cords:
         if user_cords == secret_cords:
-            add_total(message.from_user.id)
+            db.add_total(message.from_user.id)
             await message.answer('Верно ✅', reply_markup=continue_game_kb())
             await state.clear()
         else:
             await message.answer(f'Неверно ❌', reply_markup=continue_or_come_back())
+            await state.update_data(mode=mode)
     else:
         await message.answer('место, которое вы загадали не найдено')

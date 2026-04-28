@@ -1,14 +1,9 @@
 from aiogram import F, Router, types
 from keyboards.keyboards import come_back, profile_keyboard
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from functions.db import get_user_total, get_top_players, get_date, get_rang_user
+from functions.db import db
 
 router = Router()
-
-
-class States(StatesGroup):
-    get_back = State()
 
 
 @router.callback_query(F.data == 'cancel_profile')
@@ -18,18 +13,18 @@ async def get_profile(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_text(
         f'<b>Профиль</b> @{callback.from_user.username}\n\n'
-        f'<b>Ранг:</b> {get_rang_user(callback.from_user.id)}\n'
-        f'<b>Угаданных мест:</b> {get_user_total(callback.from_user.id)}\n\n'
-        f'              <b>Первый заход:</b> {get_date(callback.from_user.id)}\n',
+        f'<b>Ранг:</b> {db.get_rang_user(callback.from_user.id)}\n'
+        f'<b>Угаданных мест:</b> {db.get_user_total(callback.from_user.id)}\n\n'
+        f'              <b>Первый заход:</b> {db.get_date(callback.from_user.id)}\n',
         reply_markup=profile_keyboard(),
         parse_mode='HTML'
     )
 
 
 @router.callback_query(F.data == 'top_5')
-async def top_players(callback: types.CallbackQuery, state: FSMContext):
+async def top_players(callback: types.CallbackQuery):
     await callback.answer()
-    data = get_top_players(5)
+    data = db.get_top_players(5)
     tir_list = ''
     for i, (user, total, rang) in enumerate(data, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "📌"
@@ -39,4 +34,3 @@ async def top_players(callback: types.CallbackQuery, state: FSMContext):
         reply_markup=come_back(),
         parse_mode='HTML'
     )
-    await state.set_state(States.get_back)
