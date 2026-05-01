@@ -148,6 +148,7 @@ async def handle_user_answer(message: types.Message, state: FSMContext):
             db.add_total(message.from_user.id)
             await message.answer('Верно ✅', reply_markup=continue_game_kb())
             await state.clear()
+            await state.update_data(mode=mode)
         else:
             await message.answer(f'Неверно ❌', reply_markup=continue_or_come_back())
             await state.update_data(mode=mode)
