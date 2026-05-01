@@ -1,4 +1,5 @@
 import os
+import httpx
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -6,9 +7,12 @@ load_dotenv()
 
 TOKEN_OPEN_AI = os.getenv("TOKEN_OPEN_AI")
 
+PROXY_URL = os.getenv('PROXY_URL')
+proxy_client = httpx.Client(proxy=PROXY_URL)
+
 
 def get_secret_city():
-    client = OpenAI(api_key=TOKEN_OPEN_AI)
+    client = OpenAI(api_key=TOKEN_OPEN_AI, http_client=proxy_client)
 
     completion = client.chat.completions.create(
         model="o4-mini",
@@ -31,7 +35,7 @@ def get_secret_city():
 
 
 def get_secret_country():
-    client = OpenAI(api_key=TOKEN_OPEN_AI)
+    client = OpenAI(api_key=TOKEN_OPEN_AI, http_client=proxy_client)
 
     completion = client.chat.completions.create(
         model="o4-mini",
@@ -53,7 +57,7 @@ def get_secret_country():
 
 
 def get_help_from_ai(toponim, mode="city"):
-    client = OpenAI(api_key=TOKEN_OPEN_AI)
+    client = OpenAI(api_key=TOKEN_OPEN_AI, http_client=proxy_client)
 
     if mode == "city":
         prompt = (f"Тебе был загадан город: {toponim}."
