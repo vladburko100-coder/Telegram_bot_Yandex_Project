@@ -118,5 +118,13 @@ class DataBase:
         date = cursor.fetchone()
         return date[0]
 
+    def get_active_users(self):
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT user_id FROM users")
+        users = cursor.fetchall()
+        connection.close()
+        return [user[0] for user in users]
+
 
 db = DataBase()
