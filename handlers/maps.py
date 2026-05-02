@@ -1,9 +1,11 @@
 from aiogram import F, Router, types
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from keyboards.keyboards import start_keyboard, continue_or_come_back, get_help, continue_game_kb
+from typing import List
+from keyboards.keyboards import (start_keyboard, continue_or_come_back, get_help, continue_game_kb, get_back_keyboard,
+                                 get_back_mode)
 from functions.yandex_api import search_cords, static_maps
-from functions.openai_api import get_secret_city, get_help_from_ai, get_secret_country
+from functions.openai_api import get_secret_city, get_help_from_ai, get_secret_country, get_secret_place
 from functions.db import db
 
 router = Router()
@@ -11,6 +13,33 @@ router = Router()
 
 class States(StatesGroup):
     answer = State()
+
+
+@router.callback_query(F.data == 'give_up')
+async def give_up(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+
+    await callback.message.delete()
+
+    thinking_msg = await callback.message.answer('Было загадано... 😶‍🌫')
+    try:
+        data = await state.get_data()
+        place = data.get('secret_place')
+        helps = data.get('helps', [])
+
+        for hint_id in helps:
+            await callback.bot.delete_message(
+                chat_id=callback.message.chat.id,
+                message_id=hint_id
+            )
+        prompt = get_secret_place(place)
+
+        if place:
+            await thinking_msg.delete()
+
+            await callback.message.answer(prompt, parse_mode='HTML', reply_markup=get_back_mode())
+    except ConnectionError:
+        await callback.message.answer('Я забыл место о котором мы говорили 🫣')
 
 
 @router.callback_query(F.data == 'play')
@@ -36,7 +65,11 @@ async def get_helps(callback: types.CallbackQuery, state: FSMContext):
         if prompt:
             await thinking_msg.delete()
 
-            await callback.message.answer(prompt, parse_mode='HTML')
+            hint_msg = await callback.message.answer(prompt, parse_mode='HTML')
+            hint_helps = data.get('helps', [])
+            hint_helps.append(hint_msg.message_id)
+
+            await state.update_data(helps=hint_helps)
     except ConnectionError:
         await callback.message.answer('Не смог придумать подсказку... 🤧')
 

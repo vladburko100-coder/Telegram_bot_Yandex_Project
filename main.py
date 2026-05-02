@@ -1,6 +1,5 @@
 import asyncio
 import os
-import aioschedule
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 from dotenv import load_dotenv

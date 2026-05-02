@@ -3,7 +3,7 @@ from datetime import date
 
 
 class DataBase:
-    def __init__(self, db_name="game_stats.db"):
+    def __init__(self, db_name="db/game_stats.db"):
         self.db_name = db_name
 
         connection = sqlite3.connect(self.db_name)

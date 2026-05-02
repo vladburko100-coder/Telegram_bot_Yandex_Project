@@ -77,3 +77,21 @@ def get_help_from_ai(toponim, mode="city"):
         ],
     )
     return completion.choices[0].message.content
+
+
+def get_secret_place(place):
+    completion = client.chat.completions.create(
+        model="o4-mini",
+        messages=[
+            {"role": "developer",
+             "content": "Отвечай на русском языке, без кавычек и других лишних знаков."
+                        " Можешь добавлять различные теги HTML для выделения важных слов ТОЛЬКО <i>, <b>, <u>"},
+            {
+                "role": "user",
+                "content": f"Тебе было загадано место: {place}. Напиши: Был|а загадан|а страна(или город) ... ."
+                           f" ТЫ ДОЛЖЕН ПИСАТЬ ИЛИ СТРАНА ИЛИ ГОРОД ТОЛЬКО ОДНО. И 1"
+                           f" предложение про это место"
+            },
+        ],
+    )
+    return completion.choices[0].message.content

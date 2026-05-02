@@ -7,6 +7,12 @@ def get_back_keyboard():
     ])
 
 
+def get_back_mode():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='⏪', callback_data='play')]
+    ])
+
+
 def main_menu_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Играть 👾', callback_data='play')],
@@ -37,20 +43,21 @@ def come_back():
 
 def continue_or_come_back():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Продолжить', callback_data='continue_game')],
-        [InlineKeyboardButton(text='Следующее место', callback_data='next_game')],
+        [InlineKeyboardButton(text='Повторить 🔄', callback_data='continue_game')],
+        [InlineKeyboardButton(text='Следующее ➡', callback_data='next_game')],
         [InlineKeyboardButton(text='⏪', callback_data='cancel')]
     ])
 
 
 def continue_game_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Продолжить', callback_data='next_game')],
+        [InlineKeyboardButton(text='Следующее ➡', callback_data='next_game')],
         [InlineKeyboardButton(text='⏪', callback_data='cancel')]
     ])
 
 
 def get_help():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text='Помощь', callback_data='help')]
+        [InlineKeyboardButton(text='Помощь', callback_data='help')],
+        [InlineKeyboardButton(text='Сдаться', callback_data='give_up')]
     ])
