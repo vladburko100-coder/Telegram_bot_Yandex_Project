@@ -1,8 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from typing import List
-from keyboards.keyboards import (start_keyboard, continue_or_come_back, get_help, continue_game_kb, get_back_keyboard,
+from keyboards.keyboards import (start_keyboard, continue_or_come_back, get_help, continue_game_kb,
                                  get_back_mode)
 from functions.yandex_api import search_cords, static_maps
 from functions.openai_api import get_secret_city, get_help_from_ai, get_secret_country, get_secret_place
@@ -175,15 +174,31 @@ async def handle_user_answer(message: types.Message, state: FSMContext):
     secret_cords = data.get('secret_cords')
     mode = data.get('mode')
     user_cords = search_cords(message.text)
+    user_id = message.from_user.id
 
     if user_cords:
         if user_cords == secret_cords:
-            db.add_total(message.from_user.id)
-            await message.answer('Верно ✅', reply_markup=continue_game_kb())
+            stats = db.process_answer(user_id, is_correct=True)
+
+            await message.answer(
+                f'✅ Верно!\n\n'
+                f'🎉 +{stats["points_changed"]} очков\n'
+                f'🏆 Очков: {stats["points"]}\n'
+                f'🏅 Ранг: {stats["rang"]}\n',
+                reply_markup=continue_game_kb()
+            )
             await state.clear()
             await state.update_data(mode=mode)
         else:
-            await message.answer(f'Неверно ❌', reply_markup=continue_or_come_back())
+            stats = db.process_answer(user_id, is_correct=False)
+
+            await message.answer(
+                f'❌ Неверно!\n\n'
+                f'📉 -{stats["points_changed"]} очков\n'
+                f'🏆 Осталось очков: {stats["points"]}\n'
+                f'🏅 Ранг: {stats["rang"]}',
+                reply_markup=continue_or_come_back()
+            )
             await state.update_data(mode=mode)
     else:
         await message.answer('место, которое вы загадали не найдено')

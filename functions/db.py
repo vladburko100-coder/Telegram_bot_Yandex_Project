@@ -1,10 +1,12 @@
 import sqlite3
+import json
 from datetime import date
 
 
 class DataBase:
-    def __init__(self, db_name="db/game_stats.db"):
+    def __init__(self, db_name="db/game_stats.db", jsonfile='temp/rank_multipliers.json'):
         self.db_name = db_name
+        self.json_ranks = self.load_rank_multipliers(jsonfile)
 
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
@@ -23,6 +25,7 @@ class DataBase:
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             rang TEXT NOT NULL,
                             user_id INTEGER UNIQUE,
+                            points INTEGER DEFAULT 0,
                             FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
                         )
                     """)
@@ -30,7 +33,7 @@ class DataBase:
         connection.commit()
         connection.close()
 
-    def add_user(self, user_id, username):
+    def add_user(self, user_id, username) -> None:
         if username == 'testing_tg_api_bot':
             return
         connection = sqlite3.connect(self.db_name)
@@ -38,8 +41,8 @@ class DataBase:
         try:
             cursor.execute("INSERT INTO users (user_id, username, date, total) VALUES (?, ?, ?, ?)",
                            (user_id, username, date.today().strftime("%d.%m.%Y"), 0))
-            cursor.execute("INSERT INTO ranks (user_id, rang) VALUES (?, ?)",
-                           (user_id, "Новичок"))
+            cursor.execute("INSERT INTO ranks (user_id, rang, points) VALUES (?, ?, ?)",
+                           (user_id, "Новичок", 0))
             connection.commit()
         except sqlite3.IntegrityError:
             cursor.execute(
@@ -50,29 +53,62 @@ class DataBase:
         finally:
             connection.close()
 
-    def add_total(self, user_id):
+    @staticmethod
+    def load_rank_multipliers(filename) -> dict:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    def get_points_multiplier(self, rang) -> dict:
+        return self.json_ranks.get(rang)
+
+    def add_total(self, user_id) -> None:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("UPDATE users SET total = total + 1 WHERE user_id = ?", (user_id,))
         connection.commit()
         connection.close()
+
+    def add_points(self, user_id, is_correct=True) -> None:
+        rang = self.get_rang_user(user_id)
+        multiplier = self.get_points_multiplier(rang)
+
+        if is_correct:
+            points_to_change = multiplier["add"]
+        else:
+            points_to_change = -multiplier["remove"]
+
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+        cursor.execute("UPDATE ranks SET points = points + ? WHERE user_id = ?",
+                       (points_to_change, user_id))
+        connection.commit()
+        connection.close()
+
         self.update_rank_by_score(user_id)
 
-    def update_rank_by_score(self, user_id):
+    def get_points(self, user_id) -> int:
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT points FROM ranks WHERE user_id = ?", (user_id,))
+        result = cursor.fetchone()
+        connection.close()
+        return result[0] if result else 0
+
+    def update_rank_by_score(self, user_id) -> None:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
 
-        cursor.execute("SELECT total FROM users WHERE user_id = ?", (user_id,))
+        cursor.execute("SELECT points FROM ranks WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
 
-        total_score = result[0]
-        if total_score < 4:
+        points = result[0]
+        if points < 20:
             rang = "Новичок"
-        elif total_score < 8:
+        elif points < 40:
             rang = "Исследователь"
-        elif total_score < 12:
+        elif points < 60:
             rang = "Знаток"
-        elif total_score < 16:
+        elif points < 70:
             rang = "Эксперт"
         else:
             rang = "Мастер географии"
@@ -82,15 +118,15 @@ class DataBase:
         connection.commit()
         connection.close()
 
-    def get_rang_user(self, user_id):
+    def get_rang_user(self, user_id) -> str:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT rang FROM ranks WHERE user_id = ?", (user_id,))
         result = cursor.fetchone()
         connection.close()
-        return result[0]
+        return result[0] if result else "Новичок"
 
-    def get_user_total(self, user_id):
+    def get_user_total(self, user_id) -> int:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT total FROM users WHERE user_id = ?", (user_id,))
@@ -98,27 +134,50 @@ class DataBase:
         connection.close()
         return result[0] if result else 0
 
-    def get_top_players(self, limit=5):
+    def process_answer(self, user_id: int, is_correct: bool) -> dict:
+        result = {
+            'points': 0,
+            'rang': None,
+            'points_changed': 0,
+            'total': None
+        }
+
+        self.add_points(user_id, is_correct=is_correct)
+
+        if is_correct:
+            self.add_total(user_id)
+            result['total'] = self.get_user_total(user_id)
+
+        result['points'] = self.get_points(user_id)
+        result['rang'] = self.get_rang_user(user_id)
+
+        multiplier = self.get_points_multiplier(result['rang'])
+        result['points_changed'] = multiplier["add"] if is_correct else multiplier["remove"]
+
+        return result
+
+    def get_top_players(self, limit=5) -> list[tuple]:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("""
-                SELECT u.username, u.total, r.rang 
+                SELECT u.username, u.total, r.rang, r.points
                 FROM users u
                 LEFT JOIN ranks r ON u.user_id = r.user_id
-                ORDER BY u.total DESC 
+                ORDER BY r.points DESC 
                 LIMIT ?
             """, (limit,))
         result = cursor.fetchall()
+        connection.close()
         return result
 
-    def get_date(self, user_id):
+    def get_date(self, user_id) -> str:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT date FROM users WHERE user_id = ?", (user_id,))
         date = cursor.fetchone()
-        return date[0]
+        return date[0] if date else "Неизвестно"
 
-    def get_active_users(self):
+    def get_active_users(self) -> list[int]:
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT user_id FROM users")

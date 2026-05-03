@@ -45,14 +45,14 @@ def continue_or_come_back():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Повторить 🔄', callback_data='continue_game')],
         [InlineKeyboardButton(text='Следующее ➡', callback_data='next_game')],
-        [InlineKeyboardButton(text='⏪', callback_data='cancel')]
+        [InlineKeyboardButton(text='⏪', callback_data='play')]
     ])
 
 
 def continue_game_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Следующее ➡', callback_data='next_game')],
-        [InlineKeyboardButton(text='⏪', callback_data='cancel')]
+        [InlineKeyboardButton(text='⏪', callback_data='play')]
     ])
 
 
