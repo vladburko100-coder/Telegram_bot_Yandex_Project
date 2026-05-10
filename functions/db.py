@@ -59,7 +59,7 @@ class DataBase:
             return json.load(f)
 
     def get_points_multiplier(self, rang) -> dict:
-        return self.json_ranks.get(rang)
+        return self.json_ranks.get(rang)["multipliers"]
 
     def add_total(self, user_id) -> None:
         connection = sqlite3.connect(self.db_name)
@@ -94,27 +94,23 @@ class DataBase:
         connection.close()
         return result[0] if result else 0
 
+    def get_rank_by_points(self, points: int) -> str:
+        for rank_name, config in self.json_ranks.items():
+            min_pts = config["points_min"]
+            max_pts = config["points_max"]
+
+            if points >= min_pts:
+                if max_pts is None or points <= max_pts:
+                    return rank_name
+        return "Новичок"
+
     def update_rank_by_score(self, user_id) -> None:
+        points = self.get_points(user_id)
+        new_rank = self.get_rank_by_points(points)
+
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
-
-        cursor.execute("SELECT points FROM ranks WHERE user_id = ?", (user_id,))
-        result = cursor.fetchone()
-
-        points = result[0]
-        if points < 20:
-            rang = "Новичок"
-        elif points < 40:
-            rang = "Исследователь"
-        elif points < 60:
-            rang = "Знаток"
-        elif points < 70:
-            rang = "Эксперт"
-        else:
-            rang = "Мастер географии"
-
-        cursor.execute("UPDATE ranks SET rang = ? WHERE user_id = ?", (rang, user_id))
-
+        cursor.execute("UPDATE ranks SET rang = ? WHERE user_id = ?", (new_rank, user_id))
         connection.commit()
         connection.close()
 

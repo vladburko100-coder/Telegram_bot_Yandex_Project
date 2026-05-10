@@ -33,7 +33,7 @@ async def give_up(callback: types.CallbackQuery, state: FSMContext):
             )
         prompt = get_secret_place(place)
 
-        if place:
+        if prompt:
             await thinking_msg.delete()
 
             await callback.message.answer(prompt, parse_mode='HTML', reply_markup=get_back_mode())
