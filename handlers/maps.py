@@ -11,11 +11,13 @@ router = Router()
 
 
 class States(StatesGroup):
+    """Состояние для вызова ответа"""
     answer = State()
 
 
 @router.callback_query(F.data == 'give_up')
 async def give_up(callback: types.CallbackQuery, state: FSMContext):
+    """Игрок сдался"""
     await callback.answer()
 
     await callback.message.delete()
@@ -43,6 +45,7 @@ async def give_up(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'play')
 async def static_map(callback: types.CallbackQuery, state: FSMContext):
+    """Меню выбора режима"""
     await callback.answer()
     await state.clear()
     await callback.message.edit_text(
@@ -53,6 +56,7 @@ async def static_map(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'help')
 async def get_helps(callback: types.CallbackQuery, state: FSMContext):
+    """Получить подсказку"""
     await callback.answer()
     thinking_msg = await callback.message.answer("Придумываю подсказу... 🧐")
     try:
@@ -75,6 +79,7 @@ async def get_helps(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'search_country')
 async def handle_country_mode(callback: types.CallbackQuery, state: FSMContext):
+    """Отображение страны"""
     await callback.answer()
     spn = '10,10'
     thinking_msg = await callback.message.answer("Придумываю страну... 🤔")
@@ -103,6 +108,7 @@ async def handle_country_mode(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'search_city')
 async def handle_city_mode(callback: types.CallbackQuery, state: FSMContext):
+    """Отображение города"""
     await callback.answer()
     spn = '0.3,0.3'
     thinking_msg = await callback.message.answer("Придумываю город... 🤔")
@@ -131,6 +137,7 @@ async def handle_city_mode(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'continue_game')
 async def retry_same_place(callback: types.CallbackQuery, state: FSMContext):
+    """Продолжение игры"""
     await callback.answer()
 
     data = await state.get_data()
@@ -155,6 +162,7 @@ async def retry_same_place(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'next_game')
 async def continue_game(callback: types.CallbackQuery, state: FSMContext):
+    """Запуск нового поиска"""
     await callback.answer()
 
     data = await state.get_data()
@@ -170,6 +178,7 @@ async def continue_game(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(States.answer)
 async def handle_user_answer(message: types.Message, state: FSMContext):
+    """Формирование ответа"""
     data = await state.get_data()
     secret_cords = data.get('secret_cords')
     mode = data.get('mode')

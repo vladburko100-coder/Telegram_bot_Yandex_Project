@@ -4,6 +4,7 @@ from aiogram import Bot
 
 
 async def send_reminder(bot: Bot):
+    """Периодически писать игроку об игре"""
     from functions.db import db
 
     active_users = db.get_active_users()

@@ -5,6 +5,7 @@ from datetime import date
 
 class DataBase:
     def __init__(self, db_name="db/game_stats.db", jsonfile='temp/rank_multipliers.json'):
+        """Инициализация"""
         self.db_name = db_name
         self.json_ranks = self.load_rank_multipliers(jsonfile)
 
@@ -34,6 +35,7 @@ class DataBase:
         connection.close()
 
     def add_user(self, user_id, username) -> None:
+        """Добавление юзера"""
         if username == 'testing_tg_api_bot':
             return
         connection = sqlite3.connect(self.db_name)
@@ -55,13 +57,16 @@ class DataBase:
 
     @staticmethod
     def load_rank_multipliers(filename) -> dict:
+        """Загрузка json"""
         with open(filename, 'r', encoding='utf-8') as f:
             return json.load(f)
 
     def get_points_multiplier(self, rang) -> dict:
+        """Узнать множитель очков по званию"""
         return self.json_ranks.get(rang)["multipliers"]
 
     def add_total(self, user_id) -> None:
+        """Обновление угаданных мест"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("UPDATE users SET total = total + 1 WHERE user_id = ?", (user_id,))
@@ -69,6 +74,7 @@ class DataBase:
         connection.close()
 
     def add_points(self, user_id, is_correct=True) -> None:
+        """Добавление или удаление очков по итогу ответа"""
         rang = self.get_rang_user(user_id)
         multiplier = self.get_points_multiplier(rang)
 
@@ -87,6 +93,7 @@ class DataBase:
         self.update_rank_by_score(user_id)
 
     def get_points(self, user_id) -> int:
+        """Получение очков"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT points FROM ranks WHERE user_id = ?", (user_id,))
@@ -95,6 +102,7 @@ class DataBase:
         return result[0] if result else 0
 
     def get_rank_by_points(self, points: int) -> str:
+        """Узнать ранг по очкам после ответа"""
         for rank_name, config in self.json_ranks.items():
             min_pts = config["points_min"]
             max_pts = config["points_max"]
@@ -105,6 +113,7 @@ class DataBase:
         return "Новичок"
 
     def update_rank_by_score(self, user_id) -> None:
+        """Обновление ранга"""
         points = self.get_points(user_id)
         new_rank = self.get_rank_by_points(points)
 
@@ -115,6 +124,7 @@ class DataBase:
         connection.close()
 
     def get_rang_user(self, user_id) -> str:
+        """Узнать ранг"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT rang FROM ranks WHERE user_id = ?", (user_id,))
@@ -123,6 +133,7 @@ class DataBase:
         return result[0] if result else "Новичок"
 
     def get_user_total(self, user_id) -> int:
+        """Узнать сколько угаданных мест"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT total FROM users WHERE user_id = ?", (user_id,))
@@ -131,6 +142,7 @@ class DataBase:
         return result[0] if result else 0
 
     def process_answer(self, user_id: int, is_correct: bool) -> dict:
+        """Вывод данных после ответа игрока"""
         result = {
             'points': 0,
             'rang': None,
@@ -153,6 +165,7 @@ class DataBase:
         return result
 
     def get_top_players(self, limit=5) -> list[tuple]:
+        """Получить топ игроков"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("""
@@ -167,6 +180,7 @@ class DataBase:
         return result
 
     def get_date(self, user_id) -> str:
+        """Получить дату"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT date FROM users WHERE user_id = ?", (user_id,))
@@ -174,6 +188,7 @@ class DataBase:
         return date[0] if date else "Неизвестно"
 
     def get_active_users(self) -> list[int]:
+        """узнать всех юзеров"""
         connection = sqlite3.connect(self.db_name)
         cursor = connection.cursor()
         cursor.execute("SELECT user_id FROM users")

@@ -9,6 +9,7 @@ router = Router()
 @router.callback_query(F.data == 'cancel_profile')
 @router.callback_query(F.data == 'profile')
 async def get_profile(callback: types.CallbackQuery, state: FSMContext):
+    """Профиль игрока"""
     await state.clear()
     await callback.answer()
     user_id = callback.from_user.id
@@ -25,6 +26,7 @@ async def get_profile(callback: types.CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'top_5')
 async def top_players(callback: types.CallbackQuery):
+    """Топ игроков"""
     await callback.answer()
     data = db.get_top_players(5)
     tir_list = ''
